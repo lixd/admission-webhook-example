@@ -137,22 +137,25 @@ func servePVC(w http.ResponseWriter, r *http.Request) {
 	serve(w, r, newDelegateToV1AdmitHandler(admitPVC))
 }
 
+const (
+	crt = "./cert/server.crt"
+	key = "./cert/server.key"
+)
+
 func main() {
-	// config := Config{
-	// 	CertFile: certFile,
-	// 	KeyFile:  keyFile,
-	// }
+	config := Config{
+		CertFile: crt,
+		KeyFile:  key,
+	}
 
 	http.HandleFunc("/add-label", serveAddLabel)
 	http.HandleFunc("/pvc", servePVC)
 	http.HandleFunc("/readyz", func(w http.ResponseWriter, req *http.Request) { w.Write([]byte("ok")) })
 	server := &http.Server{
-		// Addr: fmt.Sprintf(":%d", port),
-		Addr: ":8080",
-		// TLSConfig: configTLS(config),
+		Addr:      ":8080",
+		TLSConfig: configTLS(config),
 	}
-	// err := server.ListenAndServeTLS("", "")
-	err := server.ListenAndServe()
+	err := server.ListenAndServeTLS(crt, key)
 	if err != nil {
 		panic(err)
 	}
